@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["@vercel/og"],
     "plugins": [
       {
         "name": "next"
