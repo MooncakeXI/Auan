@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const serverless = require('serverless-http');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -18,4 +17,17 @@ app.use(express.json());
 app.use('/api/wishes', wishRoutes);
 app.use('/api/memories', memoryRoutes);
 
-module.exports.handler = serverless(app);
+const PORT = process.env.PORT || 5000;
+
+const server = app.listen(
+  PORT,
+  console.log(
+    "Server running in ",
+    process.env.NODE_ENV,
+    " mode on port ",
+    PORT
+  )
+);
+
+
+module.exports = app;
