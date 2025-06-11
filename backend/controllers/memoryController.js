@@ -3,12 +3,22 @@ const Memory = require('../models/Memory.js');
 
 exports.getMemories = async (req, res) => {
     try {
-        const memories = await Memory.find().sort({ date: -1 }); 
-        res.status(200).json({success: true, count: memories.length, data: memories});
+        // เปลี่ยนจาก -1 เป็น 1 เพื่อเรียงจากวันที่เก่าที่สุดไปหาใหม่ที่สุด
+        const memories = await Memory.find().sort({ date: 1 }); 
+
+        res.status(200).json({
+            success: true,
+            count: memories.length,
+            data: memories
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching memories', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching memories',
+            error: error.message
+        });
     }
-}
+};
 
 exports.getMemorie = async (req, res) => {
     try {
