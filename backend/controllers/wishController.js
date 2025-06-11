@@ -1,17 +1,28 @@
+// controllers/wishController.js
+
 const Wish = require('../models/Wish.js');
 
 exports.createWish = async (req, res) => {
     try {
-        const { text } = req.body;
-        if (!text) {
-            return res.status(400).json({ message: 'Wish text is required' });
-        }
-
-        const newWish = new Wish({ text });
+        const newWish = new Wish(req.body);
+        
         await newWish.save();
 
         res.status(201).json({ success: true, data: newWish });
+
     } catch (error) {
-        res.status(500).json({ message: 'Error creating wish', error: error.message });
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid input data.', 
+                errors: error.errors 
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error creating wish', 
+            error: error.message 
+        });
     }
 }

@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-
+const cors = require("cors");
 
 dotenv.config({ path: './config/config.env' });
 
@@ -12,10 +12,13 @@ const memoryRoutes = require('./routes/memoryRoutes');
 
 const app = express();
 
+app.use(cors()); 
+
 app.use(express.json());
 
 app.use('/api/wishes', wishRoutes);
 app.use('/api/memories', memoryRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 
