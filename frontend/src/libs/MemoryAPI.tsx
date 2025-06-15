@@ -12,6 +12,8 @@ export interface Memory {
   title: string;
   description: string;
   date: string;
+  mediaUrl?: string;   
+  mediaType?: 'image' | 'video';
   createdAt: string;
   updatedAt: string;
 }

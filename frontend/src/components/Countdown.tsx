@@ -1,6 +1,6 @@
 // src/components/Countdown.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react' // 1. Import useRef เพิ่ม
 
 interface CountdownProps {
     targetDate: string
@@ -22,13 +22,23 @@ export default function Countdown({ targetDate, onComplete }: CountdownProps) {
     const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
         calculate(+new Date(targetDate) - +new Date())
     )
+    
+    // 2. ใช้ useRef เพื่อสร้างตัวแปรสำหรับจำสถานะ โดยไม่ทำให้หน้าเว็บ re-render
+    const hasCompleted = useRef(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
             const diff = +new Date(targetDate) - +new Date()
+
             if (diff <= 0) {
                 setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-                if (onComplete) onComplete()
+
+                // 3. ตรวจสอบก่อนว่ายังไม่เคยเรียก onComplete มาก่อน
+                if (onComplete && !hasCompleted.current) {
+                    onComplete()
+                    hasCompleted.current = true; // 4. ตั้งค่าว่าทำงานไปแล้ว จะไม่เข้าเงื่อนไขนี้อีก
+                }
+                
                 clearInterval(interval)
             } else {
                 setTimeLeft(calculate(diff))
@@ -52,6 +62,5 @@ export default function Countdown({ targetDate, onComplete }: CountdownProps) {
                 </div>
             ))}
         </div>
-
     )
 }

@@ -3,18 +3,17 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-// 1. Import ฟังก์ชันสำหรับเรียก API (สมมติว่าไฟล์อยู่ที่ lib/api.js)
-import createWish from '../libs/createWish' 
+import createWish from '../libs/createWish'
+import { useRouter } from 'next/navigation' // 1. Import useRouter
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
 
 export default function CelebrationSection() {
+  const router = useRouter() // 2. สร้าง instance ของ router
   const [blown, setBlown] = useState(false)
   const [wish, setWish] = useState('')
   const [submittedWish, setSubmittedWish] = useState<string | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-  // 2. เพิ่ม State สำหรับจัดการ Loading และ Error
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,31 +30,29 @@ export default function CelebrationSection() {
     setBlown(true)
   }
 
-  // 3. ปรับปรุงฟังก์ชัน handleSubmit ให้เรียก API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!wish.trim()) return
 
     setIsLoading(true)
-    setError(null) // Reset error ทุกครั้งที่พยายามส่งใหม่
+    setError(null)
 
     try {
-      // เตรียมข้อมูลที่จะส่งไปให้ Backend (ตาม WishSchema ที่มีแค่ text)
       const wishData = { text: wish.trim() }
-      
-      // เรียกใช้ API
       const response = await createWish(wishData)
 
-      // เมื่อสำเร็จ, แสดงผลลัพธ์
       setSubmittedWish(response.data.text)
       setWish('')
 
+      // 3. หลังจากส่งสำเร็จ หน่วงเวลา 2 วินาทีแล้วไปหน้า surprise
+      setTimeout(() => {
+        router.push('/surprise')
+      }, 2000) // 2000ms = 2 วินาที
+
     } catch (err) {
-      // หากเกิดข้อผิดพลาด
       console.error('Failed to submit wish:', err)
       setError('ไม่สามารถส่งคำอวยพรได้ โปรดลองอีกครั้งในภายหลัง')
     } finally {
-      // ไม่ว่าจะสำเร็จหรือล้มเหลว ให้หยุดการ loading
       setIsLoading(false)
     }
   }
@@ -64,6 +61,7 @@ export default function CelebrationSection() {
     <section className="max-w-3xl mx-auto p-8 text-center space-y-6">
       <h2 className="text-3xl font-bold text-gray-800">Make a Wish!</h2>
 
+      {/* ... โค้ดส่วนเป่าเค้ก ... */}
       <div className="relative inline-block">
         {!blown ? (
           <>
@@ -113,41 +111,26 @@ export default function CelebrationSection() {
             placeholder="เขียนคำอวยพรของคุณที่นี่..."
             className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
             rows={3}
-            disabled={isLoading} // ปิดการใช้งาน textarea ขณะกำลังส่ง
+            disabled={isLoading}
           />
           <button
             type="submit"
             className="px-6 py-2 bg-pink-500 text-white font-medium rounded-lg shadow hover:bg-pink-600 transition disabled:bg-pink-300"
-            disabled={isLoading} // 4. ปิดการใช้งานปุ่มขณะ loading
+            disabled={isLoading}
           >
             {isLoading ? 'กำลังส่ง...' : 'ส่งคำอวยพร'} 
           </button>
-          
-          {/* 4. แสดงข้อความ Error ถ้ามี */}
           {error && <p className="text-red-500 mt-2">{error}</p>}
-
         </form>
       )}
 
       {submittedWish && (
-        <>
-          <div className="fixed inset-0 pointer-events-none z-50">
-            {dimensions.width > 0 && dimensions.height > 0 && (
-              <Confetti
-                width={dimensions.width}
-                height={dimensions.height}
-                numberOfPieces={300}
-                gravity={0.2}
-                recycle={false}
-              />
-            )}
-          </div>
-
-          <div className="mt-6 p-6 bg-pink-50 rounded-xl shadow-lg relative z-10">
-            <p className="text-xl text-gray-800">🎉 ความปรารถนาของคุณถูกส่งแล้ว:</p>
-            <p className="mt-2 text-gray-700 italic">"{submittedWish}"</p>
-          </div>
-        </>
+        <div className="mt-6 p-6 bg-pink-50 rounded-xl shadow-lg relative z-10">
+          <p className="text-xl text-gray-800">🎉 ความปรารถนาของคุณถูกส่งแล้ว!</p>
+          <p className="mt-2 text-gray-700 italic">"{submittedWish}"</p>
+          {/* 4. เพิ่มข้อความแจ้งผู้ใช้ */}
+          <p className="text-sm text-pink-500 mt-4 animate-pulse">กำลังพาคุณไปสู่เซอร์ไพรส์...</p>
+        </div>
       )}
     </section>
   )
